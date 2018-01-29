@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/mukhinaks/fops/generic"
-	"github.com/mukhinaks/fops/locations"
+	"github.com/mukhinaks/fops/points"
 )
 
 type EnrichmentConstraints struct {
@@ -15,8 +15,8 @@ type EnrichmentConstraints struct {
 	StartLocationDistances map[int]float64
 	EndLocationDistance    map[int]float64
 	StartEndDistance       float64
-	StartLocation          locations.BaseLocation
-	EndLocation            locations.BaseLocation
+	StartLocation          points.BaseLocation
+	EndLocation            points.BaseLocation
 	ForbiddenLocations     []int
 	CompulsoryLocations    []int
 	RouteTimeLimit         int
@@ -25,18 +25,18 @@ type EnrichmentConstraints struct {
 func (f EnrichmentConstraints) Init(locs []generic.Point) generic.Constraints {
 	f.StartID = f.CompulsoryLocations[f.NumberOfInterval]
 	f.EndID = f.CompulsoryLocations[f.NumberOfInterval+1]
-	start := locs[f.CompulsoryLocations[f.NumberOfInterval]].(locations.BaseLocation)
-	end := locs[f.CompulsoryLocations[f.NumberOfInterval+1]].(locations.BaseLocation)
+	start := locs[f.CompulsoryLocations[f.NumberOfInterval]].(points.BaseLocation)
+	end := locs[f.CompulsoryLocations[f.NumberOfInterval+1]].(points.BaseLocation)
 
 	f.StartLocationDistances = make(map[int]float64)
 	f.EndLocationDistance = make(map[int]float64)
 
 	for idx, loc := range locs {
-		location := loc.(locations.BaseLocation)
-		f.StartLocationDistances[idx] = locations.EuclidianDistance(start, location)
-		f.EndLocationDistance[idx] = locations.EuclidianDistance(end, location)
+		location := loc.(points.BaseLocation)
+		f.StartLocationDistances[idx] = points.EuclidianDistance(start, location)
+		f.EndLocationDistance[idx] = points.EuclidianDistance(end, location)
 	}
-	f.StartEndDistance = locations.EuclidianDistance(start, end)
+	f.StartEndDistance = points.EuclidianDistance(start, end)
 	f.StartLocation = start
 	f.EndLocation = end
 
@@ -53,7 +53,7 @@ func (f EnrichmentConstraints) computeTimeLimits(routeTimeLimit int, locs []gene
 	for i := 0; i < len(f.CompulsoryLocations)-1; i++ {
 		keyStart := f.CompulsoryLocations[i]
 		keyEnd := f.CompulsoryLocations[i+1]
-		distance := locations.EuclidianDistance(locs[keyStart].(locations.BaseLocation), locs[keyEnd].(locations.BaseLocation))
+		distance := points.EuclidianDistance(locs[keyStart].(points.BaseLocation), locs[keyEnd].(points.BaseLocation))
 
 		value := 0
 		for id, loc := range locs {
@@ -63,8 +63,8 @@ func (f EnrichmentConstraints) computeTimeLimits(routeTimeLimit int, locs []gene
 				}
 			}
 
-			if locations.EuclidianDistance(loc.(locations.BaseLocation), locs[keyEnd].(locations.BaseLocation)) <= distance ||
-				locations.EuclidianDistance(loc.(locations.BaseLocation), locs[keyStart].(locations.BaseLocation)) <= distance {
+			if points.EuclidianDistance(loc.(points.BaseLocation), locs[keyEnd].(points.BaseLocation)) <= distance ||
+				points.EuclidianDistance(loc.(points.BaseLocation), locs[keyStart].(points.BaseLocation)) <= distance {
 				value++
 			}
 		}
@@ -72,11 +72,11 @@ func (f EnrichmentConstraints) computeTimeLimits(routeTimeLimit int, locs []gene
 		sumLocationsCount += value
 
 		time :=
-			locations.WalkingTime(locs[keyStart].(locations.BaseLocation), locs[keyEnd].(locations.BaseLocation))
+			points.WalkingTime(locs[keyStart].(points.BaseLocation), locs[keyEnd].(points.BaseLocation))
 		if i == 0 {
-			time += locs[keyStart].(locations.BaseLocation).Duration + locs[keyEnd].(locations.BaseLocation).Duration
+			time += locs[keyStart].(points.BaseLocation).Duration + locs[keyEnd].(points.BaseLocation).Duration
 		} else {
-			time += locs[keyEnd].(locations.BaseLocation).Duration
+			time += locs[keyEnd].(points.BaseLocation).Duration
 
 		}
 		sumTime += time
@@ -104,16 +104,17 @@ func (f EnrichmentConstraints) computeTimeLimits(routeTimeLimit int, locs []gene
 func (f EnrichmentConstraints) routeTime(route map[int]generic.Point, orderOfLocations []int) int {
 	duration := 0
 	if route == nil {
-		duration = f.StartLocation.Duration + f.EndLocation.Duration + locations.WalkingTime(f.StartLocation, f.EndLocation)
+		duration = f.StartLocation.Duration + f.EndLocation.Duration + points.WalkingTime(f.StartLocation, f.EndLocation)
 	} else {
-		loc := route[orderOfLocations[0]].(locations.BaseLocation)
-		duration = f.EndLocation.Duration + locations.WalkingTime(f.StartLocation, loc)
+		loc := route[orderOfLocations[0]].(points.BaseLocation)
+		duration = f.EndLocation.Duration + points.WalkingTime(f.StartLocation, loc)
 		for i := 0; i < len(orderOfLocations)-1; i++ {
 			key := orderOfLocations[i]
-			walkTime := locations.WalkingTime(route[key].(locations.BaseLocation), route[orderOfLocations[i+1]].(locations.BaseLocation))
-			duration += route[key].(locations.BaseLocation).Duration + int(walkTime)
+			walkTime := points.WalkingTime(route[key].(points.BaseLocation), route[orderOfLocations[i+1]].(points.BaseLocation))
+			duration += route[key].(points.BaseLocation).Duration + int(walkTime)
 		}
-		duration += locations.WalkingTime(f.EndLocation, route[orderOfLocations[len(orderOfLocations)-1]].(locations.BaseLocation)) + route[orderOfLocations[len(orderOfLocations)-1]].(locations.BaseLocation).Duration
+		duration += points.WalkingTime(f.EndLocation, route[orderOfLocations[len(orderOfLocations)-1]].(points.BaseLocation)) +
+			route[orderOfLocations[len(orderOfLocations)-1]].(points.BaseLocation).Duration
 		if f.NumberOfInterval == 0 {
 			duration += f.StartLocation.Duration
 		}
@@ -129,10 +130,10 @@ func (f EnrichmentConstraints) FinalRouteTime(route map[int]generic.Point, order
 	} else {
 		for i := 0; i < len(orderOfLocations)-1; i++ {
 			key := orderOfLocations[i]
-			walkTime := locations.WalkingTime(route[key].(locations.BaseLocation), route[orderOfLocations[i+1]].(locations.BaseLocation))
-			duration += route[key].(locations.BaseLocation).Duration + int(walkTime)
+			walkTime := points.WalkingTime(route[key].(points.BaseLocation), route[orderOfLocations[i+1]].(points.BaseLocation))
+			duration += route[key].(points.BaseLocation).Duration + int(walkTime)
 		}
-		duration += route[orderOfLocations[len(orderOfLocations)-1]].(locations.BaseLocation).Duration
+		duration += route[orderOfLocations[len(orderOfLocations)-1]].(points.BaseLocation).Duration
 
 	}
 	return duration
@@ -147,7 +148,7 @@ func (f EnrichmentConstraints) Boundary(route map[int]generic.Point, orderOfLoca
 	return true
 }
 
-func (f EnrichmentConstraints) LocationConstraints(location generic.Point, id int) bool {
+func (f EnrichmentConstraints) SinglePointConstraints(location generic.Point, id int) bool {
 	for _, i := range f.ForbiddenLocations {
 		if i == id {
 			return false

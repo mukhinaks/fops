@@ -54,7 +54,7 @@ func (locations BaseLocations) Init(solver *generic.Solver) generic.Points {
 		fmt.Println(err)
 		return nil
 	}
-	locations.Locations = data
+	locations.Points = data
 	return locations
 }
 
@@ -76,18 +76,18 @@ func readLocations(pathToJSON string) ([]BaseLocation, error) {
 	return data, nil
 }
 
-func (locations BaseLocations) GetAllLocations() []generic.Point {
+func (locations BaseLocations) GetAllPoints() []generic.Point {
 	allLocations := make([]generic.Point, 0)
-	for _, l := range locations.Locations {
+	for _, l := range locations.Points {
 		allLocations = append(allLocations, l)
 	}
 	return allLocations
 }
 
-func (locations BaseLocations) GetCurrentLocations() map[int]generic.Point {
+func (locations BaseLocations) GetCurrentPoints() map[int]generic.Point {
 	currentLocations := make(map[int]generic.Point)
-	for idx, location := range locations.Locations {
-		if locations.solver.Constraints.LocationConstraints(location, idx) {
+	for idx, location := range locations.Points {
+		if locations.solver.Constraints.SinglePointConstraints(location, idx) {
 			currentLocations[idx] = location
 		}
 	}

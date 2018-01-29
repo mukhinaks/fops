@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/mukhinaks/fops/constraints"
-	"github.com/mukhinaks/fops/locations"
+	"github.com/mukhinaks/fops/points"
 
 	"github.com/mukhinaks/fops/algorithm/aco"
 	"github.com/mukhinaks/fops/generic"
@@ -13,16 +13,16 @@ import (
 
 func main() {
 	solver := generic.Solver{
-		Locations:   locations.BaseLocations{},
+		Points:      points.BaseLocations{},
 		Score:       score.OPScore{},
 		Constraints: constraints.EnrichmentConstraints{},
 		Algorithm:   aco.ACO{},
 	}
 
-	ExperimentClassicalOP(solver, "", 21, 19, 200, "classic-op")
-	ExperimentClassicalOPWithReference(solver, "", []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10}, "classic-op-with-ref")
-	ExperimentOPCV(solver, "", []int{0, 31, 21, 19}, 240, "opcv")
-	ExperimentOPCVMultipleDays(solver, "", []int{152, 3, 106, 105, 51, 63, 9, 127, 157, 158, 11, 13, 5191}, 600, 2, "opcv-multiple-days")
+	//ExperimentClassicalOP(solver, "", 21, 19, 200, "classic-op")
+	//ExperimentClassicalOPWithReference(solver, "", []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10}, "classic-op-with-ref")
+	//ExperimentOPCV(solver, "", []int{0, 31, 21, 19}, 240, "opcv")
+	ExperimentOPCVMultipleDays(solver, "", []int{152, 3, 106, 105, 51, 63, 9, 127, 157, 158, 11, 13, 5191}, 600, 3, "opcv-multiple-days")
 
 }
 
@@ -30,13 +30,13 @@ func ExperimentClassicalOP(solver generic.Solver, configPath string, startID int
 	fmt.Println("-----------------")
 	fmt.Println("Classical OP")
 
-	locs := locations.BaseLocations{}
+	locs := points.BaseLocations{}
 	sc := score.OPScore{}
 	pathAlgorithm := &aco.ACO{}
 
 	c := &constraints.OPConstraints{}
 
-	solver.Locations = locs
+	solver.Points = locs
 	solver.Constraints = c
 	solver.Score = sc
 	solver.Algorithm = pathAlgorithm
@@ -75,13 +75,13 @@ func ExperimentClassicalOPWithReference(solver generic.Solver, configPath string
 	fmt.Println("-----------------")
 	fmt.Println("Classical OP with reference path")
 
-	locs := locations.BaseLocations{}
+	locs := points.BaseLocations{}
 	sc := score.OPScore{}
 	pathAlgorithm := &aco.ACO{}
 
 	c := &constraints.OPConstraints{}
 
-	solver.Locations = locs
+	solver.Points = locs
 	solver.Constraints = c
 	solver.Score = sc
 	solver.Algorithm = pathAlgorithm
@@ -96,7 +96,7 @@ func ExperimentClassicalOPWithReference(solver generic.Solver, configPath string
 
 	c.StartID = sc.StartID
 	c.EndID = sc.EndID
-	c.TimeLimit = sc.ComputeRouteTimeFromSample(referencePath, solver.Locations.GetAllLocations())
+	c.TimeLimit = sc.ComputeRouteTimeFromSample(referencePath, solver.Points.GetAllPoints())
 	solver.Constraints = c
 
 	result, order, _ := solver.NextInterval()
@@ -120,7 +120,7 @@ func ExperimentOPCV(solver generic.Solver, configPath string, compulsoryLocation
 	fmt.Println("-----------------")
 	fmt.Println("OPCV")
 
-	locs := locations.BaseLocations{}
+	locs := points.BaseLocations{}
 	sc := score.OPScore{}
 	pathAlgorithm := &aco.ACO{}
 
@@ -132,7 +132,7 @@ func ExperimentOPCV(solver generic.Solver, configPath string, compulsoryLocation
 	c.RouteTimeLimit = routeTimeLimit
 	pathAlgorithm = &aco.ACO{}
 
-	solver.Locations = locs
+	solver.Points = locs
 	solver.Constraints = c
 	solver.Score = sc
 	solver.Algorithm = pathAlgorithm
@@ -173,7 +173,7 @@ func ExperimentOPCVMultipleDays(solver generic.Solver, configPath string, compul
 	fmt.Println("-----------------")
 	fmt.Println("OPCV for Mutiple Days")
 
-	locs := locations.BaseLocations{}
+	locs := points.BaseLocations{}
 	sc := score.OPScore{}
 	pathAlgorithm := &aco.ACO{}
 
@@ -188,13 +188,16 @@ func ExperimentOPCVMultipleDays(solver generic.Solver, configPath string, compul
 
 	pathAlgorithm = &aco.ACO{}
 
-	solver.Locations = locs
+	solver.Points = locs
 	solver.Constraints = c
 	solver.Score = sc
 	solver.Algorithm = pathAlgorithm
 	solver.Start(configPath)
-	days, times := c.SplitForDays(c.CompulsoryLocations, solver.Locations.GetAllLocations())
+	days, times := c.SplitForDays(c.CompulsoryLocations, solver.Points.GetAllPoints())
 	for i := 1; i <= c.DaysNumber; i++ {
+		if len(days[i]) == 0 {
+			continue
+		}
 		c.CurrentDay = i
 		c.TimeLimit = times[i]
 		c.CompulsoryLocations = days[i]
@@ -216,15 +219,15 @@ func ExperimentOPCVMultipleDays(solver generic.Solver, configPath string, compul
 			}
 
 			finalOrder = append(finalOrder, sc.EndID)
-			end := result[sc.EndID].(locations.BaseLocation)
+			end := result[sc.EndID].(points.BaseLocation)
 			end.ID = c.CurrentDay
 			finalRoute[sc.EndID] = end
-			start := result[sc.StartID].(locations.BaseLocation)
+			start := result[sc.StartID].(points.BaseLocation)
 			start.ID = c.CurrentDay
 			finalRoute[sc.StartID] = start
 
 			for _, k := range order {
-				l := result[k].(locations.BaseLocation)
+				l := result[k].(points.BaseLocation)
 				l.ID = c.CurrentDay
 				finalRoute[k] = l
 			}

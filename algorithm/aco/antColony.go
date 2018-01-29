@@ -38,7 +38,7 @@ func (colony ACO) CreateRoute() (map[int]generic.Point, []int, float64) {
 	var bestOrder []int
 	var bestScore float64
 	candidatesLocations := colony.solver.Points.GetCurrentPoints()
-	antsNumber := int(math.Min(colony.antsNumber*float64(len(colony.solver.Points.GetCurrentPoints())),
+	antsNumber := int(math.Min(colony.antsNumber*float64(len(colony.solver.Points.GetAllPoints())),
 		float64(len(candidatesLocations))*colony.antsNumber)) + 1
 	antsNumberPerChannel := int(antsNumber/colony.numberOfChannels) + 1
 

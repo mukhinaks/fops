@@ -19,10 +19,10 @@ func main() {
 		Algorithm:   aco.ACO{},
 	}
 
-	//ExperimentClassicalOP(solver, "", 21, 19, 200, "classic-op")
-	//ExperimentClassicalOPWithReference(solver, "", []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10}, "classic-op-with-ref")
-	//ExperimentOPCV(solver, "", []int{0, 31, 21, 19}, 240, "opcv")
-	ExperimentOPCVMultipleDays(solver, "", []int{152, 3, 106, 105, 51, 63, 9, 127, 157, 158, 11, 13, 5191}, 600, 3, "opcv-multiple-days")
+	ExperimentClassicalOP(solver, "", 21, 19, 200, "classic-op")
+	ExperimentClassicalOPWithReference(solver, "", []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10}, "classic-op-with-ref")
+	ExperimentOPCV(solver, "", []int{0, 31, 21, 19}, 240, "opcv")
+	ExperimentOPCVMultipleDays(solver, "", []int{152, 3, 106, 105, 51, 63, 9, 127, 157, 158, 11, 13, 5191}, 600, 2, "opcv-multiple-days")
 
 }
 

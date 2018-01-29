@@ -22,7 +22,7 @@ type EnrichmentConstraints struct {
 	RouteTimeLimit         int
 }
 
-func (f EnrichmentConstraints) Init(locs []generic.Location) generic.Constraints {
+func (f EnrichmentConstraints) Init(locs []generic.Point) generic.Constraints {
 	f.StartID = f.CompulsoryLocations[f.NumberOfInterval]
 	f.EndID = f.CompulsoryLocations[f.NumberOfInterval+1]
 	start := locs[f.CompulsoryLocations[f.NumberOfInterval]].(locations.BaseLocation)
@@ -44,7 +44,7 @@ func (f EnrichmentConstraints) Init(locs []generic.Location) generic.Constraints
 	return f
 }
 
-func (f EnrichmentConstraints) computeTimeLimits(routeTimeLimit int, locs []generic.Location) []int {
+func (f EnrichmentConstraints) computeTimeLimits(routeTimeLimit int, locs []generic.Point) []int {
 	locationsCount := make([]int, 0)
 	minimumTime := make([]int, 0)
 	sumLocationsCount := 0
@@ -101,7 +101,7 @@ func (f EnrichmentConstraints) computeTimeLimits(routeTimeLimit int, locs []gene
 	return timeLimits
 }
 
-func (f EnrichmentConstraints) routeTime(route map[int]generic.Location, orderOfLocations []int) int {
+func (f EnrichmentConstraints) routeTime(route map[int]generic.Point, orderOfLocations []int) int {
 	duration := 0
 	if route == nil {
 		duration = f.StartLocation.Duration + f.EndLocation.Duration + locations.WalkingTime(f.StartLocation, f.EndLocation)
@@ -122,7 +122,7 @@ func (f EnrichmentConstraints) routeTime(route map[int]generic.Location, orderOf
 	return duration
 }
 
-func (f EnrichmentConstraints) FinalRouteTime(route map[int]generic.Location, orderOfLocations []int) int {
+func (f EnrichmentConstraints) FinalRouteTime(route map[int]generic.Point, orderOfLocations []int) int {
 	duration := 0
 	if route == nil {
 		return 0
@@ -138,7 +138,7 @@ func (f EnrichmentConstraints) FinalRouteTime(route map[int]generic.Location, or
 	return duration
 }
 
-func (f EnrichmentConstraints) Boundary(route map[int]generic.Location, orderOfLocations []int) bool {
+func (f EnrichmentConstraints) Boundary(route map[int]generic.Point, orderOfLocations []int) bool {
 	duration := f.routeTime(route, orderOfLocations)
 
 	if duration > f.TimeLimit[f.NumberOfInterval] {
@@ -147,7 +147,7 @@ func (f EnrichmentConstraints) Boundary(route map[int]generic.Location, orderOfL
 	return true
 }
 
-func (f EnrichmentConstraints) LocationConstraints(location generic.Location, id int) bool {
+func (f EnrichmentConstraints) LocationConstraints(location generic.Point, id int) bool {
 	for _, i := range f.ForbiddenLocations {
 		if i == id {
 			return false

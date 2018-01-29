@@ -9,21 +9,21 @@ import (
 )
 
 type Ant struct {
-	route           map[int]generic.Location
+	route           map[int]generic.Point
 	score           float64
 	keys            []int
 	deltaPheromones map[int](map[int]float64)
-	locations       *map[int]generic.Location
+	locations       *map[int]generic.Point
 	colony          ACO
 }
 
-func (ant *Ant) Init(locations *map[int]generic.Location, colony ACO) {
+func (ant *Ant) Init(locations *map[int]generic.Point, colony ACO) {
 	rand.Seed(time.Now().UnixNano())
 	ant.locations = locations
 	ant.colony = colony
 }
 
-func (ant *Ant) NextLocation() (bool, map[int]generic.Location, int) {
+func (ant *Ant) NextLocation() (bool, map[int]generic.Point, int) {
 	probabilities := make(map[int]float64)
 	probabilitiesSum := 0.0
 
@@ -44,7 +44,7 @@ func (ant *Ant) NextLocation() (bool, map[int]generic.Location, int) {
 				}
 			}
 		}
-		locationScore := ant.colony.solver.Score.LocationScore(ant.route, ant.keys, location, key)
+		locationScore := ant.colony.solver.Score.SinglePointScore(ant.route, ant.keys, location, key)
 
 		probability := math.Pow(pheromone, ant.colony.pheromoneControl) * math.Pow(locationScore, ant.colony.attractivenessControl)
 		if len(probabilities) < 30 {
@@ -68,7 +68,7 @@ func (ant *Ant) NextLocation() (bool, map[int]generic.Location, int) {
 	}
 
 	randomNumber := rand.Float64()
-	candidate := make(map[int]generic.Location)
+	candidate := make(map[int]generic.Point)
 	for key, value := range ant.route {
 		candidate[key] = value
 	}
@@ -85,9 +85,9 @@ func (ant *Ant) NextLocation() (bool, map[int]generic.Location, int) {
 	return ant.colony.solver.Constraints.Boundary(candidate, append(ant.keys, index)), candidate, index
 }
 
-func (ant *Ant) GetRoute() (map[int]generic.Location, []int, float64, map[int](map[int]float64)) {
+func (ant *Ant) GetRoute() (map[int]generic.Point, []int, float64, map[int](map[int]float64)) {
 
-	ant.route = make(map[int]generic.Location)
+	ant.route = make(map[int]generic.Point)
 	ant.keys = make([]int, 0)
 
 	for {

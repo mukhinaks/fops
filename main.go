@@ -42,7 +42,7 @@ func ExperimentClassicalOP(solver generic.Solver, configPath string, startID int
 	solver.Algorithm = pathAlgorithm
 	solver.Start(configPath)
 
-	finalRoute := make(map[int]generic.Location)
+	finalRoute := make(map[int]generic.Point)
 	finalOrder := []int{startID}
 
 	sc.StartID = startID
@@ -87,7 +87,7 @@ func ExperimentClassicalOPWithReference(solver generic.Solver, configPath string
 	solver.Algorithm = pathAlgorithm
 	solver.Start(configPath)
 
-	finalRoute := make(map[int]generic.Location)
+	finalRoute := make(map[int]generic.Point)
 	finalOrder := []int{referencePath[0]}
 
 	sc.StartID = referencePath[0]
@@ -124,7 +124,7 @@ func ExperimentOPCV(solver generic.Solver, configPath string, compulsoryLocation
 	sc := score.OPScore{}
 	pathAlgorithm := &aco.ACO{}
 
-	finalRoute := make(map[int]generic.Location)
+	finalRoute := make(map[int]generic.Point)
 	finalOrder := []int{compulsoryLocations[0]}
 	c := constraints.EnrichmentConstraints{}
 	c.ForbiddenLocations = compulsoryLocations
@@ -177,7 +177,7 @@ func ExperimentOPCVMultipleDays(solver generic.Solver, configPath string, compul
 	sc := score.OPScore{}
 	pathAlgorithm := &aco.ACO{}
 
-	finalRoute := make(map[int]generic.Location)
+	finalRoute := make(map[int]generic.Point)
 	finalOrder := make([]int, 0)
 
 	c := constraints.MultidaysConstraints{}

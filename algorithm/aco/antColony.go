@@ -31,14 +31,14 @@ func (colony ACO) Init(solver *generic.Solver) generic.PathAlgorithm {
 	return colony
 }
 
-func (colony ACO) CreateRoute() (map[int]generic.Location, []int, float64) {
+func (colony ACO) CreateRoute() (map[int]generic.Point, []int, float64) {
 	colony.pheromones = make(map[int](map[int]float64))
 
-	var bestRoute map[int]generic.Location
+	var bestRoute map[int]generic.Point
 	var bestOrder []int
 	var bestScore float64
-	candidatesLocations := colony.solver.Locations.GetCurrentLocations()
-	antsNumber := int(math.Min(colony.antsNumber*float64(len(colony.solver.Locations.GetAllLocations())),
+	candidatesLocations := colony.solver.Points.GetCurrentPoints()
+	antsNumber := int(math.Min(colony.antsNumber*float64(len(colony.solver.Points.GetCurrentPoints())),
 		float64(len(candidatesLocations))*colony.antsNumber)) + 1
 	antsNumberPerChannel := int(antsNumber/colony.numberOfChannels) + 1
 
@@ -49,7 +49,7 @@ func (colony ACO) CreateRoute() (map[int]generic.Location, []int, float64) {
 	for i := 0; i < colony.iterations; i++ {
 
 		allAntsPheromones := make([]map[int](map[int]float64), colony.numberOfChannels)
-		allBestRoutes := make([]map[int]generic.Location, colony.numberOfChannels)
+		allBestRoutes := make([]map[int]generic.Point, colony.numberOfChannels)
 		allBestOrders := make([][]int, colony.numberOfChannels)
 		allBestScores := make([]float64, colony.numberOfChannels)
 
@@ -60,7 +60,7 @@ func (colony ACO) CreateRoute() (map[int]generic.Location, []int, float64) {
 
 				deltaPheromones := make(map[int](map[int]float64))
 
-				var localBestRoute map[int]generic.Location
+				var localBestRoute map[int]generic.Point
 				var localBestOrder []int
 				var localBestScore float64
 
@@ -162,8 +162,4 @@ func (colony *ACO) UpdatePheromones(deltaPheromones map[int](map[int]float64)) {
 			}
 		}
 	}
-}
-
-func (colony ACO) GetRawLocations() []generic.Location {
-	return colony.solver.Locations.GetAllLocations()
 }

@@ -15,11 +15,11 @@ type OPScore struct {
 	StartLocationDistances map[int]float64
 	EndLocationDistance    map[int]float64
 	StartEndDistance       float64
-	StartLocation          generic.Location
-	EndLocation            generic.Location
+	StartLocation          generic.Point
+	EndLocation            generic.Point
 }
 
-func (f OPScore) Init(locs []generic.Location) generic.Score {
+func (f OPScore) Init(locs []generic.Point) generic.Score {
 	instagramVisitorsMax := 0.0
 	tripAdvisorVisitorsMax := 0.0
 	start := locs[f.StartID].(locations.BaseLocation)
@@ -48,8 +48,8 @@ func (f OPScore) Init(locs []generic.Location) generic.Score {
 	return f
 }
 
-func (f OPScore) LocationScore(route map[int]generic.Location, orderOfLocations []int,
-	location generic.Location, id int) float64 {
+func (f OPScore) LocationScore(route map[int]generic.Point, orderOfLocations []int,
+	location generic.Point, id int) float64 {
 	distanceCoefficient := 0.0
 
 	if len(orderOfLocations) != 0 && id != f.EndID && id != f.StartID {
@@ -73,7 +73,7 @@ func (f OPScore) LocationScore(route map[int]generic.Location, orderOfLocations 
 	return score
 }
 
-func (f OPScore) RouteScore(route map[int]generic.Location, orderOfLocations []int) float64 {
+func (f OPScore) RouteScore(route map[int]generic.Point, orderOfLocations []int) float64 {
 	_, ok := route[f.StartID]
 	if !ok {
 		route[f.StartID] = f.StartLocation
@@ -90,7 +90,7 @@ func (f OPScore) RouteScore(route map[int]generic.Location, orderOfLocations []i
 	return routeScore
 }
 
-func (f OPScore) ComputeRouteTimeFromSample(locationsID []int, allLocations []generic.Location) int {
+func (f OPScore) ComputeRouteTimeFromSample(locationsID []int, allLocations []generic.Point) int {
 	lastLocation := allLocations[len(locationsID)-1].(locations.BaseLocation)
 	time := lastLocation.Duration
 

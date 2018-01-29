@@ -1,4 +1,4 @@
-package locations
+package points
 
 import (
 	"encoding/json"
@@ -10,8 +10,8 @@ import (
 )
 
 type BaseLocations struct {
-	Locations []BaseLocation
-	solver    *generic.Solver
+	Points []BaseLocation
+	solver *generic.Solver
 }
 
 type BaseLocation struct {
@@ -47,7 +47,7 @@ type BaseLocation struct {
 	ID                       int     `json:"id"`
 }
 
-func (locations BaseLocations) Init(solver *generic.Solver) generic.Locations {
+func (locations BaseLocations) Init(solver *generic.Solver) generic.Points {
 	locations.solver = solver
 	data, err := readLocations(solver.Configuration["DataPath"].(string))
 	if err != nil {
@@ -76,16 +76,16 @@ func readLocations(pathToJSON string) ([]BaseLocation, error) {
 	return data, nil
 }
 
-func (locations BaseLocations) GetAllLocations() []generic.Location {
-	allLocations := make([]generic.Location, 0)
+func (locations BaseLocations) GetAllLocations() []generic.Point {
+	allLocations := make([]generic.Point, 0)
 	for _, l := range locations.Locations {
 		allLocations = append(allLocations, l)
 	}
 	return allLocations
 }
 
-func (locations BaseLocations) GetCurrentLocations() map[int]generic.Location {
-	currentLocations := make(map[int]generic.Location)
+func (locations BaseLocations) GetCurrentLocations() map[int]generic.Point {
+	currentLocations := make(map[int]generic.Point)
 	for idx, location := range locations.Locations {
 		if locations.solver.Constraints.LocationConstraints(location, idx) {
 			currentLocations[idx] = location
@@ -139,7 +139,7 @@ func distanceToLine(loc1Lat float64, loc1Lng float64, loc2Lat float64, loc2Lng f
 	return distanceToPoint(newLat, newLng, locLat, locLng)
 }
 
-func (l BaseLocations) WriteLocationsToJSON(route map[int]generic.Location, order []int, filePath string) {
+func (l BaseLocations) WriteLocationsToJSON(route map[int]generic.Point, order []int, filePath string) {
 	locations := make([]BaseLocation, 0)
 	for _, idx := range order {
 		locations = append(locations, route[idx].(BaseLocation))

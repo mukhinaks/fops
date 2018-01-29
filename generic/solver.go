@@ -7,23 +7,23 @@ import (
 type Solver struct {
 	Algorithm     PathAlgorithm
 	Score         Score
-	Locations     Locations
+	Points        Points
 	Constraints   Constraints
 	Configuration map[string]interface{}
 }
 
 func (solver *Solver) Start(configPath string) {
 	solver.Configuration = misc.ReadConfig(configPath)
-	solver.Locations = solver.Locations.Init(solver)
-	locations := solver.Locations.GetAllLocations()
+	solver.Points = solver.Points.Init(solver)
+	points := solver.Points.GetAllPoints()
 	solver.Algorithm = solver.Algorithm.Init(solver)
-	solver.Score = solver.Score.Init(locations)
-	solver.Constraints = solver.Constraints.Init(locations)
+	solver.Score = solver.Score.Init(points)
+	solver.Constraints = solver.Constraints.Init(points)
 }
 
-func (solver *Solver) NextInterval() (map[int]Location, []int, float64) {
-	locations := solver.Locations.GetAllLocations()
-	solver.Score = solver.Score.Init(locations)
-	solver.Constraints = solver.Constraints.Init(locations)
+func (solver *Solver) NextInterval() (map[int]Point, []int, float64) {
+	points := solver.Points.GetAllPoints()
+	solver.Score = solver.Score.Init(points)
+	solver.Constraints = solver.Constraints.Init(points)
 	return solver.Algorithm.CreateRoute()
 }

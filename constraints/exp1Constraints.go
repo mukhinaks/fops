@@ -16,7 +16,7 @@ type OPConstraints struct {
 	EndLocation            locations.BaseLocation
 }
 
-func (f *OPConstraints) Init(locs []generic.Location) generic.Constraints {
+func (f *OPConstraints) Init(locs []generic.Point) generic.Constraints {
 	start := locs[f.StartID].(locations.BaseLocation)
 	end := locs[f.EndID].(locations.BaseLocation)
 
@@ -35,7 +35,7 @@ func (f *OPConstraints) Init(locs []generic.Location) generic.Constraints {
 	return f
 }
 
-func (f *OPConstraints) routeTime(route map[int]generic.Location, orderOfLocations []int) int {
+func (f *OPConstraints) routeTime(route map[int]generic.Point, orderOfLocations []int) int {
 	duration := 0
 	if route == nil {
 		duration = f.StartLocation.Duration + f.EndLocation.Duration + locations.WalkingTime(f.StartLocation, f.EndLocation)
@@ -53,7 +53,7 @@ func (f *OPConstraints) routeTime(route map[int]generic.Location, orderOfLocatio
 	return duration
 }
 
-func (f *OPConstraints) FinalRouteTime(route map[int]generic.Location, orderOfLocations []int) int {
+func (f *OPConstraints) FinalRouteTime(route map[int]generic.Point, orderOfLocations []int) int {
 	duration := 0
 	if route == nil {
 		return 0
@@ -69,7 +69,7 @@ func (f *OPConstraints) FinalRouteTime(route map[int]generic.Location, orderOfLo
 	return duration
 }
 
-func (f *OPConstraints) Boundary(route map[int]generic.Location, orderOfLocations []int) bool {
+func (f *OPConstraints) Boundary(route map[int]generic.Point, orderOfLocations []int) bool {
 	duration := f.routeTime(route, orderOfLocations)
 
 	if duration > f.TimeLimit {
@@ -78,7 +78,7 @@ func (f *OPConstraints) Boundary(route map[int]generic.Location, orderOfLocation
 	return true
 }
 
-func (f *OPConstraints) LocationConstraints(location generic.Location, id int) bool {
+func (f *OPConstraints) LocationConstraints(location generic.Point, id int) bool {
 	if id == f.StartID || id == f.EndID {
 		return false
 	}

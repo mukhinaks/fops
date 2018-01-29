@@ -27,7 +27,7 @@ type MultidaysConstraints struct {
 	NumberOfInterval    int
 }
 
-func (f MultidaysConstraints) Init(locs []generic.Location) generic.Constraints {
+func (f MultidaysConstraints) Init(locs []generic.Point) generic.Constraints {
 	f.StartID = f.CompulsoryLocations[f.NumberOfInterval]
 	f.EndID = f.CompulsoryLocations[f.NumberOfInterval+1]
 	start := locs[f.CompulsoryLocations[f.NumberOfInterval]].(locations.BaseLocation)
@@ -47,7 +47,7 @@ func (f MultidaysConstraints) Init(locs []generic.Location) generic.Constraints 
 	return f
 }
 
-func (f MultidaysConstraints) routeTime(route map[int]generic.Location, orderOfLocations []int) int {
+func (f MultidaysConstraints) routeTime(route map[int]generic.Point, orderOfLocations []int) int {
 	duration := 0
 	if route[orderOfLocations[0]] == nil || len(orderOfLocations) == 0 {
 		duration = f.StartLocation.Duration + f.EndLocation.Duration + locations.WalkingTime(f.StartLocation, f.EndLocation)
@@ -67,7 +67,7 @@ func (f MultidaysConstraints) routeTime(route map[int]generic.Location, orderOfL
 	return duration
 }
 
-func (f MultidaysConstraints) FinalRouteTime(route map[int]generic.Location, orderOfLocations []int) int {
+func (f MultidaysConstraints) FinalRouteTime(route map[int]generic.Point, orderOfLocations []int) int {
 	if route == nil || len(orderOfLocations) == 0 {
 		return 0
 	}
@@ -82,7 +82,7 @@ func (f MultidaysConstraints) FinalRouteTime(route map[int]generic.Location, ord
 
 }
 
-func (f MultidaysConstraints) Boundary(route map[int]generic.Location, orderOfLocations []int) bool {
+func (f MultidaysConstraints) Boundary(route map[int]generic.Point, orderOfLocations []int) bool {
 	if len(orderOfLocations) == 0 {
 		return false
 	}
@@ -95,7 +95,7 @@ func (f MultidaysConstraints) Boundary(route map[int]generic.Location, orderOfLo
 	return true
 }
 
-func (f MultidaysConstraints) LocationConstraints(location generic.Location, id int) bool {
+func (f MultidaysConstraints) LocationConstraints(location generic.Point, id int) bool {
 
 	for _, i := range f.ForbiddenLocations {
 		if i == id {
@@ -110,10 +110,10 @@ func (f MultidaysConstraints) LocationConstraints(location generic.Location, id 
 	return true
 }
 
-func (f MultidaysConstraints) SplitForDays(locationsID []int, allLocations []generic.Location) (map[int][]int, map[int][]int) {
+func (f MultidaysConstraints) SplitForDays(locationsID []int, allLocations []generic.Point) (map[int][]int, map[int][]int) {
 	days := make(map[int][]int)
 	currentDay := make([]int, 0)
-	currentRoute := make(map[int]generic.Location)
+	currentRoute := make(map[int]generic.Point)
 	day := 1
 
 	for i := 0; i < len(locationsID); i++ {
@@ -123,7 +123,7 @@ func (f MultidaysConstraints) SplitForDays(locationsID []int, allLocations []gen
 		if sum > f.DayTimeLimit {
 			days[day] = currentDay[:len(currentDay)-1]
 			currentDay = make([]int, 0)
-			currentRoute = make(map[int]generic.Location)
+			currentRoute = make(map[int]generic.Point)
 			day++
 			currentDay = append(currentDay, locationsID[i])
 			currentRoute[locationsID[i]] = allLocations[locationsID[i]]
@@ -140,7 +140,7 @@ func (f MultidaysConstraints) SplitForDays(locationsID []int, allLocations []gen
 	return days, times
 }
 
-func (f MultidaysConstraints) computeTimeLimits(routeTimeLimit int, locs []generic.Location, compulsoryLocations []int) []int {
+func (f MultidaysConstraints) computeTimeLimits(routeTimeLimit int, locs []generic.Point, compulsoryLocations []int) []int {
 	locationsCount := make([]int, 0)
 	minimumTime := make([]int, 0)
 	sumLocationsCount := 0

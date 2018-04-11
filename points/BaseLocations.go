@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"math"
 
 	"github.com/mukhinaks/fops/generic"
 )
@@ -28,15 +27,7 @@ type BaseLocation struct {
 	Lng                     float64  `json:"lng"`
 	OfficialGuide           float64  `json:"officialGuide"`
 
-	OpenHours struct {
-		Num0 []int `json:"0"`
-		Num1 []int `json:"1"`
-		Num2 []int `json:"2"`
-		Num3 []int `json:"3"`
-		Num4 []int `json:"4"`
-		Num5 []int `json:"5"`
-		Num6 []int `json:"6"`
-	} `json:"open_hours"`
+	OpenHours map[string][]int `json:"open_hours"`
 
 	Title                    string  `json:"title"`
 	TripAdvisorLink          string  `json:"tripAdvisor_link"`
@@ -49,7 +40,7 @@ type BaseLocation struct {
 
 func (locations BaseLocations) Init(solver *generic.Solver) generic.Points {
 	locations.solver = solver
-	data, err := readLocations(solver.Configuration["DataPath"].(string))
+	data, err := locations.readLocations(solver.Configuration["DataPath"].(string))
 	if err != nil {
 		fmt.Println(err)
 		return nil
@@ -62,7 +53,7 @@ func (l *BaseLocation) String() (string, error) {
 	return string(l.Title), nil
 }
 
-func readLocations(pathToJSON string) ([]BaseLocation, error) {
+func (locations BaseLocations) readLocations(pathToJSON string) ([]BaseLocation, error) {
 	raw, err := ioutil.ReadFile(pathToJSON)
 	if err != nil {
 		return nil, err
@@ -94,51 +85,6 @@ func (locations BaseLocations) GetCurrentPoints() map[int]generic.Point {
 	return currentLocations
 }
 
-func EuclidianDistance(loc1 BaseLocation, loc2 BaseLocation) float64 {
-	return distanceToPoint(loc1.X, loc1.Y, loc2.X, loc2.Y)
-}
-
-func EuclidianDistanceToLineSegment(start BaseLocation, end BaseLocation, location BaseLocation) float64 {
-	return distanceToLine(start.X, start.Y, end.X, end.Y, location.X, location.Y)
-}
-
-func WalkingTime(loc1 BaseLocation, loc2 BaseLocation) int {
-	return int(distanceToPoint(loc1.X, loc1.Y, loc2.X, loc2.Y) / 66.7)
-}
-
-func distanceToPoint(loc1Lat float64, loc1Lng float64, loc2Lat float64, loc2Lng float64) float64 {
-	result := math.Sqrt(math.Pow((loc1Lat-loc2Lat), 2) + math.Pow((loc1Lng-loc2Lng), 2))
-	return result
-}
-
-func scalarDot(loc1Lat float64, loc1Lng float64, loc2Lat float64, loc2Lng float64) float64 {
-	result := (loc1Lat * loc2Lat) + (loc1Lng * loc2Lng)
-	return result
-}
-
-func distanceToLine(loc1Lat float64, loc1Lng float64, loc2Lat float64, loc2Lng float64, newLat float64, newLng float64) float64 {
-	vector1Lat := loc1Lat - loc2Lat
-	vector1Lng := loc1Lng - loc2Lng
-	vector2Lat := loc1Lat - newLat
-	vector2Lng := loc1Lng - newLng
-
-	scalarProduct := scalarDot(vector1Lat, vector1Lng, vector2Lat, vector2Lng)
-	if scalarProduct <= 0 {
-		return distanceToPoint(newLat, newLng, loc1Lat, loc1Lng)
-	}
-
-	length := scalarDot(vector1Lat, vector1Lng, vector1Lat, vector1Lng)
-	if length <= scalarProduct {
-		return distanceToPoint(newLat, newLng, loc2Lat, loc2Lng)
-	}
-
-	b := scalarProduct / length
-	locLat := loc1Lat + b*vector1Lat
-	locLng := loc1Lng + b*vector1Lng
-
-	return distanceToPoint(newLat, newLng, locLat, locLng)
-}
-
 func (l BaseLocations) WriteLocationsToJSON(route map[int]generic.Point, order []int, filePath string) {
 	locations := make([]BaseLocation, 0)
 	for _, idx := range order {
@@ -147,4 +93,18 @@ func (l BaseLocations) WriteLocationsToJSON(route map[int]generic.Point, order [
 	locationsJSON, _ := json.Marshal(locations)
 
 	ioutil.WriteFile(filePath, locationsJSON, 0644)
+}
+
+func (locations BaseLocations) GetPointsInArea(startID int, endID int) map[int]generic.Point {
+	start := locations.Points[startID]
+	end := locations.Points[endID]
+	distance := EuclidianDistance(start, end)
+
+	currentLocations := make(map[int]generic.Point)
+	for idx, location := range locations.Points {
+		if EuclidianDistance(location, start) <= distance && EuclidianDistance(location, end) <= distance {
+			currentLocations[idx] = location
+		}
+	}
+	return currentLocations
 }

@@ -1,0 +1,10 @@
+{
+    "AntsNumber": 0.25,
+    "Fadeness": 0.1,
+    "Iterations": 20,
+    "AttractivenessControl": 3,
+    "PheromoneControl": 2,
+    "DataPath": "experiments/aggregated-data-st-petersburg-cleaned.json", 
+    "NumberOfChannels": 40,
+    "TimeLimit": 600
+}

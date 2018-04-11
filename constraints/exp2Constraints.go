@@ -110,6 +110,9 @@ func (f EnrichmentConstraints) routeTime(route map[int]generic.Point, orderOfLoc
 		duration = f.EndLocation.Duration + points.WalkingTime(f.StartLocation, loc)
 		for i := 0; i < len(orderOfLocations)-1; i++ {
 			key := orderOfLocations[i]
+			if key == f.StartID || key == f.EndID {
+				continue
+			}
 			walkTime := points.WalkingTime(route[key].(points.BaseLocation), route[orderOfLocations[i+1]].(points.BaseLocation))
 			duration += route[key].(points.BaseLocation).Duration + int(walkTime)
 		}
@@ -148,6 +151,10 @@ func (f EnrichmentConstraints) Boundary(route map[int]generic.Point, orderOfLoca
 	return true
 }
 
+func (f EnrichmentConstraints) ReducePoints(route map[int]generic.Point, orderOfLocations []int, locations map[int]generic.Point) map[int]generic.Point {
+	return locations
+}
+
 func (f EnrichmentConstraints) SinglePointConstraints(location generic.Point, id int) bool {
 	for _, i := range f.ForbiddenLocations {
 		if i == id {
@@ -160,10 +167,15 @@ func (f EnrichmentConstraints) SinglePointConstraints(location generic.Point, id
 			return false
 		}
 	}
-
-	if f.StartLocationDistances[id] > f.StartEndDistance && f.EndLocationDistance[id] > f.StartEndDistance {
-		return false
-	}
+	/*
+		if f.StartLocationDistances[id] > f.StartEndDistance && f.EndLocationDistance[id] > f.StartEndDistance {
+			return false
+		}
+	*/
 
 	return true
+}
+
+func (f EnrichmentConstraints) UpdateConstraint(route map[int]generic.Point, orderOfPoints []int, locations []generic.Point) generic.Constraints {
+	return f
 }

@@ -2,6 +2,8 @@ package aco
 
 import (
 	"math"
+	"runtime"
+	"sync"
 
 	"github.com/mukhinaks/fops/generic"
 )
@@ -18,6 +20,12 @@ type ACO struct {
 	numberOfChannels      int //
 }
 
+type Deltas struct {
+	start int
+	end   int
+	delta float64
+}
+
 func (colony ACO) Init(solver *generic.Solver) generic.PathAlgorithm {
 	colony.solver = solver
 	colony.fadeness = solver.Configuration["Fadeness"].(float64)
@@ -28,6 +36,7 @@ func (colony ACO) Init(solver *generic.Solver) generic.PathAlgorithm {
 	colony.pheromones = make(map[int](map[int]float64))
 	colony.antsNumber = solver.Configuration["AntsNumber"].(float64)
 	colony.numberOfChannels = int(solver.Configuration["NumberOfChannels"].(float64))
+	runtime.GOMAXPROCS(12)
 	return colony
 }
 
@@ -38,128 +47,98 @@ func (colony ACO) CreateRoute() (map[int]generic.Point, []int, float64) {
 	var bestOrder []int
 	var bestScore float64
 	candidatesLocations := colony.solver.Points.GetCurrentPoints()
-	antsNumber := int(math.Min(colony.antsNumber*float64(len(colony.solver.Points.GetAllPoints())),
-		float64(len(candidatesLocations))*colony.antsNumber)) + 1
-	antsNumberPerChannel := int(antsNumber/colony.numberOfChannels) + 1
-
-	if antsNumberPerChannel == 0 {
-		antsNumberPerChannel = 1
-	}
+	antsNumber := int(float64(len(candidatesLocations))*colony.antsNumber) + 1
 
 	for i := 0; i < colony.iterations; i++ {
 
-		allAntsPheromones := make([]map[int](map[int]float64), colony.numberOfChannels)
-		allBestRoutes := make([]map[int]generic.Point, colony.numberOfChannels)
-		allBestOrders := make([][]int, colony.numberOfChannels)
-		allBestScores := make([]float64, colony.numberOfChannels)
+		iterationPheromones := make([]Deltas, 0)
 
-		sem := make(chan bool, colony.numberOfChannels)
-		for k := 0; k < colony.numberOfChannels; k++ {
-			go func(k int) {
-				ants := make([]Ant, antsNumberPerChannel)
+		sem := make(chan bool, antsNumber)
+		mux := sync.Mutex{}
+		for k := 0; k < antsNumber; k++ {
+			go func(i int) {
+				ant := Ant{}
+				ant.Init(&candidatesLocations, colony)
+				ant.GetRoute()
 
-				deltaPheromones := make(map[int](map[int]float64))
-
-				var localBestRoute map[int]generic.Point
-				var localBestOrder []int
-				var localBestScore float64
-
-				for _, ant := range ants {
-					ant.Init(&candidatesLocations, colony)
-
-					finalRoute, finalOrder, finalScore, antPheromones := ant.GetRoute()
-
-					if finalScore >= localBestScore {
-						localBestRoute = finalRoute
-						localBestOrder = finalOrder
-						localBestScore = finalScore
-					}
-
-					for startKey, elem := range antPheromones {
-						for endKey, delta := range elem {
-							_, ok := deltaPheromones[startKey]
-							if ok {
-								value, exists := deltaPheromones[startKey][endKey]
-								if exists {
-									deltaPheromones[startKey][endKey] = value + delta/(float64(antsNumberPerChannel)*float64(colony.numberOfChannels))
-								} else {
-									deltaPheromones[startKey][endKey] = delta / (float64(antsNumberPerChannel) * float64(colony.numberOfChannels))
-								}
-							} else {
-								deltaPheromones[startKey] = make(map[int]float64)
-								deltaPheromones[startKey][endKey] = delta / (float64(antsNumberPerChannel) * float64(colony.numberOfChannels))
-							}
-						}
-
-					}
+				mux.Lock()
+				if ant.score >= bestScore {
+					bestRoute = ant.route
+					bestOrder = ant.keys
+					bestScore = ant.score
 				}
 
-				allAntsPheromones[k] = deltaPheromones
-				allBestRoutes[k] = localBestRoute
-				allBestOrders[k] = localBestOrder
-				allBestScores[k] = localBestScore
+				for key := 0; key < len(ant.keys)-1; key++ {
+					startKey := ant.keys[key]
+					endKey := ant.keys[key+1]
+
+					iterationPheromones = append(iterationPheromones, Deltas{startKey, endKey, ant.score / float64(antsNumber)})
+				}
+				mux.Unlock()
 				sem <- true
 			}(k)
 		}
-		for i := 0; i < colony.numberOfChannels; i++ {
+
+		//t := time.Now()
+		for i := 0; i < antsNumber; i++ {
 			<-sem
 		}
+		//		fmt.Println(time.Since(t))
 
-		for i, score := range allBestScores {
-			if score >= bestScore {
-				bestRoute = allBestRoutes[i]
-				bestOrder = allBestOrders[i]
-				bestScore = score
-			}
-		}
-		iterationDeltaPheromones := make(map[int](map[int]float64))
-		for _, deltaPheromones := range allAntsPheromones {
-			for startKey, elem := range deltaPheromones {
-				for endKey, delta := range elem {
-					_, ok := iterationDeltaPheromones[startKey]
-					if ok {
-						value, exists := iterationDeltaPheromones[startKey][endKey]
-						if exists {
-							iterationDeltaPheromones[startKey][endKey] = value + delta
-						} else {
-							iterationDeltaPheromones[startKey][endKey] = delta
-						}
-					} else {
-						iterationDeltaPheromones[startKey] = make(map[int]float64)
-						iterationDeltaPheromones[startKey][endKey] = delta
-					}
-				}
-
-			}
-		}
-
-		colony.UpdatePheromones(iterationDeltaPheromones)
+		colony.UpdatePheromones(iterationPheromones)
 		colony.currentIterations++
 	}
 
 	return bestRoute, bestOrder, bestScore
 }
 
-func (colony *ACO) UpdatePheromones(deltaPheromones map[int](map[int]float64)) {
+func (colony *ACO) UpdatePheromones(allAntsPheromones []Deltas) {
 	for startKey, elem := range colony.pheromones {
 		for endKey, pheromone := range elem {
 			colony.pheromones[startKey][endKey] = pheromone * colony.fadeness
 		}
 	}
 
-	for startKey, elem := range deltaPheromones {
-		_, ok := colony.pheromones[startKey]
-		if !ok {
-			colony.pheromones[startKey] = make(map[int]float64)
-		}
-		for endKey, delta := range elem {
-			_, ok := colony.pheromones[startKey][endKey]
+	for _, deltas := range allAntsPheromones {
+		delta := deltas.delta
+		_, ok := colony.pheromones[deltas.start]
+		if ok {
+			value, ok := colony.pheromones[deltas.start][deltas.end]
 			if ok {
-				colony.pheromones[startKey][endKey] = colony.pheromones[startKey][endKey] + delta
+				colony.pheromones[deltas.start][deltas.end] = value + delta
 			} else {
-				colony.pheromones[startKey][endKey] =
+				colony.pheromones[deltas.start][deltas.end] =
 					math.Pow(colony.fadeness, float64(colony.currentIterations)) + delta
 			}
+		} else {
+			colony.pheromones[deltas.start] = make(map[int]float64)
+			colony.pheromones[deltas.start][deltas.end] =
+				math.Pow(colony.fadeness, float64(colony.currentIterations)) + delta
 		}
 	}
+	/*
+		for _, deltaPheromones := range allAntsPheromones {
+			for startKey, elem := range deltaPheromones {
+				for endKey, delta := range elem {
+					_, ok := colony.pheromones[startKey]
+					if ok {
+						value, ok := colony.pheromones[startKey][endKey]
+						if ok {
+							colony.pheromones[startKey][endKey] = value + delta
+						} else {
+							colony.pheromones[startKey][endKey] =
+								math.Pow(colony.fadeness, float64(colony.currentIterations)) + delta
+						}
+					} else {
+						colony.pheromones[startKey] = make(map[int]float64)
+						colony.pheromones[startKey][endKey] =
+							math.Pow(colony.fadeness, float64(colony.currentIterations)) + delta
+					}
+
+				}
+
+			}
+		}
+	*/
+
 }

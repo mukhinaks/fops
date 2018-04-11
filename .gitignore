@@ -1,4 +1,16 @@
-*.json
+opfp-new.json
+merged-final.json
+aggregated-data-st-petersburg-cleaned.json
 !config.json
 
-*.txt
+
+results
+data
+
+optw
+tdop
+op
+opcv
+opfp
+football
+output*

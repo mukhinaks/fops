@@ -56,6 +56,9 @@ func (f MultidaysConstraints) routeTime(route map[int]generic.Point, orderOfLoca
 		duration = points.WalkingTime(f.StartLocation, loc) + f.EndLocation.Duration
 		for i := 0; i < len(orderOfLocations)-1; i++ {
 			key := orderOfLocations[i]
+			if key == f.StartID || key == f.EndID {
+				continue
+			}
 			walkTime := points.WalkingTime(route[key].(points.BaseLocation), route[orderOfLocations[i+1]].(points.BaseLocation))
 			duration += route[key].(points.BaseLocation).Duration + int(walkTime)
 		}
@@ -94,6 +97,10 @@ func (f MultidaysConstraints) Boundary(route map[int]generic.Point, orderOfLocat
 		return false
 	}
 	return true
+}
+
+func (f MultidaysConstraints) ReducePoints(route map[int]generic.Point, orderOfLocations []int, locations map[int]generic.Point) map[int]generic.Point {
+	return locations
 }
 
 func (f MultidaysConstraints) SinglePointConstraints(location generic.Point, id int) bool {
@@ -195,4 +202,8 @@ func (f MultidaysConstraints) computeTimeLimits(routeTimeLimit int, locs []gener
 	}
 
 	return timeLimits
+}
+
+func (f MultidaysConstraints) UpdateConstraint(route map[int]generic.Point, orderOfPoints []int, locations []generic.Point) generic.Constraints {
+	return f
 }

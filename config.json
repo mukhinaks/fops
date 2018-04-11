@@ -4,7 +4,7 @@
     "Iterations": 100,
     "AttractivenessControl": 3,
     "PheromoneControl": 2,
-    "DataPath": "merged-final.json",
+    "DataPath": "experiments/samples/experiment-sample-5000.json", 
     "NumberOfChannels": 40,
     "TimeLimit": 600
 }

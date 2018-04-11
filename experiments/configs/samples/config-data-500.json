@@ -1,0 +1,10 @@
+{
+    "AntsNumber": 1,
+    "Fadeness": 0.1,
+    "Iterations": 100,
+    "AttractivenessControl": 3,
+    "PheromoneControl": 2,
+    "DataPath": "experiments/samples/experiment-sample-500.json", 
+    "NumberOfChannels": 100,
+    "TimeLimit": 600
+}

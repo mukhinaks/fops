@@ -13,7 +13,7 @@ AttractivenessControl - influence of point score in probability computation\
 PheromoneControl - influence of pheromone value in probability computation\
 DataPath - path to dataset\
 NumberOfChannels - parameter for parallel launch\
-TimeLimit - currently not used\
+TimeLimit - currently not used
 
 Build the framework (run terminal in FOPS directory):\
 `go build`

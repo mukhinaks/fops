@@ -77,4 +77,9 @@ The output route is JSON file, where each element contains all information about
 ```
 
 ## Dataset
-The data is publicly available [here](https://goo.gl/q9T2pr).
+The data is publicly available [here](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/KCAIXS).
+Data citation:
+Mukhina, Ksenia; Visheratin, Alexander, 2019, "Replication Data for: Orienteering Problem with Functional Profits for multisource dynamic path construction", https://doi.org/10.7910/DVN/KCAIXS, Harvard Dataverse, V1
+
+## Citation
+Mukhina KD, Visheratin AA, Nasonov D (2019) Orienteering Problem with Functional Profits for multi-source dynamic path construction. PLOS ONE 14(4): e0213777. https://doi.org/10.1371/journal.pone.0213777

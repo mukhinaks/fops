@@ -89,6 +89,26 @@ func distanceToPoint(loc1Lat float64, loc1Lng float64, loc2Lat float64, loc2Lng 
 	return result
 }
 
+func convertToRadians(angle float64) float64 {
+	rad := angle * 180 / math.Pi
+	return rad
+}
+
+func HaversineDistance(loc1Lat float64, loc1Lng float64, loc2Lat float64, loc2Lng float64) float64 {
+	R := 6371 * 1000.0 // Earth radius in meters
+	phi1 := convertToRadians(loc1Lat)
+	phi2 := convertToRadians(loc2Lat)
+	deltaPhi := convertToRadians(loc2Lat - loc1Lat)
+	deltaLambda := convertToRadians(loc2Lng - loc1Lng)
+
+	a := math.Pow(math.Sin(deltaPhi/2), 2) + math.Cos(phi1)*math.Cos(phi2)*math.Pow(math.Sin(deltaLambda/2), 2)
+
+	c := 2 * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
+
+	distance := R * c
+	return distance
+}
+
 func scalarDot(loc1Lat float64, loc1Lng float64, loc2Lat float64, loc2Lng float64) float64 {
 	result := (loc1Lat * loc2Lat) + (loc1Lng * loc2Lng)
 	return result

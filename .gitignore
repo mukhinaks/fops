@@ -14,3 +14,6 @@ opcv
 opfp
 football
 output*
+benchmarks
+.DS_Store
+benchmarks/*

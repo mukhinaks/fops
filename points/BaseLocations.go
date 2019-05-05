@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"math"
 
 	"github.com/mukhinaks/fops/generic"
 )
@@ -107,4 +108,16 @@ func (locations BaseLocations) GetPointsInArea(startID int, endID int) map[int]g
 		}
 	}
 	return currentLocations
+}
+
+func (locations BaseLocations) FindClosestPoint(lat float64, lon float64) generic.Point {
+	minDistance := math.MaxFloat64
+	closestPoint := locations.Points[0]
+
+	for _, location := range locations.Points {
+		if HaversineDistance(location.Lat, location.Lng, lat, lon) <= minDistance {
+			closestPoint = location
+		}
+	}
+	return closestPoint
 }

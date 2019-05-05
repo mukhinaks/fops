@@ -50,7 +50,8 @@ func ExperimentCompareProblemSolvingTime(problems []string, algorithm string, ou
 	fmt.Println("Done")
 }
 
-// ProblemSolvingTime runs specific problem of defined number of times; all resulting routes against with summary of each launch will be written in output folder.
+// ProblemSolvingTime runs specific problem of defined number of times. 
+// all resulting routes against with summary of each launch will be written in output folder.
 func ProblemSolvingTime(problem string, datasetSize int, outputFolderName string, numberOfLaunches int) {
 	algorithmFolder := "ACO"
 	CreateDirIfNotExist(outputFolderName)
@@ -111,7 +112,8 @@ func ProblemSolvingTime(problem string, datasetSize int, outputFolderName string
 	writer.Flush()
 }
 
-// ProblemSolvingTime runs specific problem of defined number of times; all resulting routes against with summary of each launch will be written in output folder.
+// ProblemSolvingTime runs specific problem of defined number of times. 
+// All resulting routes against with summary of each launch will be written in output folder.
 func ProblemSolvingTimeByRGA(problem string, datasetSize int, outputFolderName string, numberOfLaunches int) {
 	algorithmFolder := "RGA"
 	CreateDirIfNotExist(outputFolderName)

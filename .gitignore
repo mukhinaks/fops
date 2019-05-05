@@ -16,4 +16,5 @@ football
 output*
 benchmarks
 .DS_Store
-benchmarks/*
+!benchmarks/
+fops

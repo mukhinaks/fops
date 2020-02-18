@@ -1,4 +1,4 @@
-# fops
+# FOPS - framework for orienteering problem solving
 
 ## How to launch:
 
